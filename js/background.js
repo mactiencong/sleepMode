@@ -23,8 +23,17 @@ function disable(){
 }
 
 function newTabListener(tabDetail){
-  discardTab(tabDetail.tabId)
-  changeTabTitle(tabDetail.tabId)
+  discardAllTab(tabDetail.tabId)
+}
+
+function isChromeSettingTab(tabDetail){
+  return tabDetail.url.includes('chrome://')
+}
+
+function startSleepModeTab(tabId){
+  changeTabTitle(tabId).then(()=>{
+    discardTab(tabId)
+  })
 }
 
 function setEnableIcon(){
@@ -54,22 +63,34 @@ function reload(tab){
 function discardTab(tabId){
   try {
     chrome.tabs.discard(tabId)
-  } catch {}
+  } catch(error){
+  }
 }
 
 function changeTabTitle(tabId){
-  try {
-    chrome.tabs.executeScript(tabId, {code:"document.title = 'Sleep Mode'"})
-  } catch {}
+  return new Promise(resolve => {
+    try {
+      chrome.tabs.executeScript(tabId, {code:"if(!document.title.includes('Sleep Mode|')) document.title = 'Sleep Mode|'+document.title"}, () => {
+        resolve(true)
+      })
+    } catch(error){
+      resolve(true)
+    }
+  })
+}
+
+function isTabHighlighted(tab){
+  return tab.highlighted === true
 }
 
 function discardAllTab(){
-  chrome.tabs.query({url: "*://*/*"}, tabs => {
+  chrome.tabs.query({url: "*://*/*", active: false}, tabs => {
       tabs.forEach(tab => {
-        changeTabTitle(tab.id)
-        discardTab(tab.id)
+        if(!isChromeSettingTab(tab) && !isTabHighlighted(tab))  startSleepModeTab(tab.id)
       })
   })
 }
 
 start()
+
+enable()
