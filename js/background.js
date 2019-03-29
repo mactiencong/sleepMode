@@ -1,23 +1,43 @@
-let isEnable = true
+let isEnable = false
 
-function start(){
-  chrome.browserAction.onClicked.addListener(function(tab) {
-    if(isEnable) {
-        disable()
-    } else enable()
+function getIsEnableStorage(){
+  return new Promise(resolve => {
+    chrome.storage.local.get(['key'], result => {
+      resolve(result.key)
+    })
+  })
+}
+
+function setIsEnableStorage(value){
+  chrome.storage.local.set({key: value})
+}
+
+function run(){
+  getIsEnableStorage().then(value => {
+    isEnable = value? true: false
+    if(isEnable) enable()
+    else disable()
+  })
+  chrome.browserAction.onClicked.addListener(() => {
+    if(isEnable) disable()
+    else enable()
   })
 }
 
 function enable(){
   isEnable = true
+  setIsEnableStorage(isEnable)
   setEnableIcon()
+  changeBadge()
   discardAllTab()
   chrome.webNavigation.onCompleted.addListener(newTabListener)
 }
 
 function disable(){
   isEnable = false
+  setIsEnableStorage(isEnable)
   setDisableIcon()
+  changeBadge()
   reloadAllTab()
   chrome.webNavigation.onCompleted.removeListener(newTabListener)
 }
@@ -70,13 +90,18 @@ function discardTab(tabId){
 function changeTabTitle(tabId){
   return new Promise(resolve => {
     try {
-      chrome.tabs.executeScript(tabId, {code:"if(!document.title.includes('Sleep Mode|')) document.title = 'Sleep Mode|'+document.title"}, () => {
+      chrome.tabs.executeScript(tabId, {code:"if(!document.title.includes('☾ ')) document.title = '☾ '+document.title"}, () => {
         resolve(true)
       })
     } catch(error){
       resolve(true)
     }
   })
+}
+
+function changeBadge(){
+  const badge = isEnable? '☾': ''
+  chrome.browserAction.setBadgeText({text: badge})
 }
 
 function isTabHighlighted(tab){
@@ -90,7 +115,5 @@ function discardAllTab(){
       })
   })
 }
-
-start()
-
-enable()
+setIsEnableStorage(isEnable)
+run()

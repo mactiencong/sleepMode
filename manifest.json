@@ -3,12 +3,13 @@
   "name": "Sleep Mode",
   "short_name": "Sleep Mode",
   "description": "Sleep Mode",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "author": "matico",
   "permissions": [
     "tabs",
     "activeTab",
     "webNavigation",
+    "storage",
     "<all_urls>"
   ],
   "background": {
