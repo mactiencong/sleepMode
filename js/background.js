@@ -69,7 +69,7 @@ function setDisableIcon(){
 }
 
 function reloadAllTab(){
-  chrome.tabs.query({url: "*://*/*"}, tabs => {
+  chrome.tabs.query({url: "*://*/*", discarded: true }, tabs => {
       tabs.forEach(tab => {
         reload(tab)
       })
@@ -102,6 +102,7 @@ function changeTabTitle(tabId){
 function changeBadge(){
   const badge = isEnable? '☾': ''
   chrome.browserAction.setBadgeText({text: badge})
+  chrome.browserAction.setBadgeBackgroundColor({color: '#F00'})
 }
 
 function isTabHighlighted(tab){
