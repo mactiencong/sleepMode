@@ -1,0 +1,44 @@
+<html>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">
+  <link href="style.css" rel="stylesheet" media="screen">
+  <body>
+    <div class="container">
+        <div class="title"><strong>SLEEP MODE</strong></div>
+        <div class="content">
+            <div class="item">
+                <div class="title">Ignore pinned tabs</div>
+                <div class="value">
+                    <label class="switch">
+                        <input id="ignore_pinned_tabs" type="checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="item">
+                <div class="title"><i>Ignore tabs with audio playback (comming soon)</i></div>
+                <div class="value">
+                    <label class="switch">
+                        <input disabled id='ignore_audio_playback' type="checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="item">
+                <div class="timer">
+                    <p>Sleep timer</p>
+                    <input id="sleep_timer" type="range" min="0" max="120" value="0">
+                </div>
+            </div>
+            <div class="item">
+                Sleep after&nbsp;<b id="timer_value"></b>&nbsp;mins
+            </div>
+        </div>
+        <div class="confirm">
+            <button id='start' class="button start_button">START</button>
+            <button id='disable' class="button disable_button">DISABLE</button>
+        </div>
+    </div>
+  </body>
+  <script src="index.js"></script>
+</html>

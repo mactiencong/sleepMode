@@ -1,43 +1,49 @@
 let isEnable = false
-
-function getIsEnableStorage(){
+let timerValue = 0
+let ignorePinnedTabs = false
+function getOption(){
   return new Promise(resolve => {
-    chrome.storage.local.get(['key'], result => {
-      resolve(result.key)
+    chrome.storage.local.get({
+      isEnable: isEnable,
+      ignorePinnedTabs: ignorePinnedTabs
+    }, option => {
+      resolve(option)
     })
   })
 }
 
-function setIsEnableStorage(value){
-  chrome.storage.local.set({key: value})
-}
+// function saveOption(){
+//   chrome.storage.local.set({
+//     isEnable: isEnable,
+//     timerValue: timerValue,
+//     ignorePinnedTabs: ignorePinnedTabs
+//   })
+// }
 
 function run(){
-  getIsEnableStorage().then(value => {
-    isEnable = value? true: false
+  console.log('run')
+  getOption().then(option => {
+    isEnable = option.isEnable
+    timerValue = option.timerValue
+    ignorePinnedTabs = option.ignorePinnedTabs
     if(isEnable) enable()
     else disable()
-  })
-  chrome.browserAction.onClicked.addListener(() => {
-    if(isEnable) disable()
-    else enable()
   })
 }
 
 function enable(){
   isEnable = true
-  setIsEnableStorage(isEnable)
   setEnableIcon()
-  changeBadge()
+  setSleepBadge()
   discardAllTab()
+  processForPinnedTab()
   chrome.webNavigation.onCompleted.addListener(newTabListener)
 }
 
 function disable(){
   isEnable = false
-  setIsEnableStorage(isEnable)
   setDisableIcon()
-  changeBadge()
+  removeSleepBadge()
   reloadAllTab()
   chrome.webNavigation.onCompleted.removeListener(newTabListener)
 }
@@ -99,22 +105,90 @@ function changeTabTitle(tabId){
   })
 }
 
-function changeBadge(){
+function setSleepBadge(){
   const badge = isEnable? '☾': ''
   chrome.browserAction.setBadgeText({text: badge})
   chrome.browserAction.setBadgeBackgroundColor({color: '#F00'})
+}
+
+function removeSleepBadge(){
+  chrome.browserAction.setBadgeText({text: ''})
 }
 
 function isTabHighlighted(tab){
   return tab.highlighted === true
 }
 
+function isPinnedTab(tab){
+  return tab.pinned
+}
+
 function discardAllTab(){
-  chrome.tabs.query({url: "*://*/*", active: false, pinned: false}, tabs => {
+  chrome.tabs.query({url: "*://*/*", active: false}, tabs => {
       tabs.forEach(tab => {
+        if(ignorePinnedTabs && isPinnedTab(tab)) return
         if(!isChromeSettingTab(tab) && !isTabHighlighted(tab))  startSleepModeTab(tab.id)
       })
   })
 }
-setIsEnableStorage(isEnable)
+
+function processForPinnedTab(){
+  if(ignorePinnedTabs) {
+    chrome.tabs.query({url: "*://*/*", pinned: true, discarded: true}, tabs => {
+      tabs.forEach(tab => {
+        reload(tab)
+      })
+    })
+  }
+}
+
+// chrome.browserAction.onClicked.addListener(() => {
+//   if(isEnable) disable()
+//   else enable()
+// })
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log('message', message)
+  if(message.msg === 'OPTION_START'){
+    onOptionStart(message.time)
+  }
+  else if(message.msg === 'OPTION_DISABLE'){
+    onOptionDisable()
+  }
+})
+
+function onOptionStart(time){
+  isEnable = true
+  timerValue = getValidTimerValue(time)
+  if(timerValue>0){
+    timerForSleep()
+  } else {
+    run()
+  }
+}
+
+function onOptionDisable(){
+  isEnable = false
+  run()
+}
+
+function getValidTimerValue(value){
+  return value
+}
+
+let timerTimeout = null
+function timerForSleep(){
+  removeTimerForSleep()
+  timerTimeout = setTimeout(()=>{
+    removeTimerForSleep()
+    run()
+  }, timerValue*1000*60)
+}
+
+function removeTimerForSleep(){
+  if(timerTimeout !== null) {
+    clearTimeout(timerTimeout)
+    timerTimeout = null
+  }
+}
 run()

@@ -3,7 +3,7 @@
   "name": "Sleep Mode",
   "short_name": "Sleep Mode",
   "description": "Sleep Mode",
-  "version": "1.0.4",
+  "version": "2.0.1a",
   "author": "matico",
   "permissions": [
     "tabs",
@@ -20,6 +20,9 @@
   },
   "browser_action":{
     "default_icon": "icon/enable.png",
-    "default_popup": "setting/index.html"
+    "default_popup": "options/index.html"
+  },
+  "options_ui": {
+    "page": "options/index.html"
   }
 }
