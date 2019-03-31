@@ -110,7 +110,7 @@ function isTabHighlighted(tab){
 }
 
 function discardAllTab(){
-  chrome.tabs.query({url: "*://*/*", active: false}, tabs => {
+  chrome.tabs.query({url: "*://*/*", active: false, pinned: false}, tabs => {
       tabs.forEach(tab => {
         if(!isChromeSettingTab(tab) && !isTabHighlighted(tab))  startSleepModeTab(tab.id)
       })
