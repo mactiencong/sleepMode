@@ -1,31 +1,26 @@
 let isEnable = false
 let timerValue = 0
 let ignorePinnedTabs = false
+let ignoreAudioPlayback = false
 function getOption(){
   return new Promise(resolve => {
     chrome.storage.local.get({
       isEnable: isEnable,
-      ignorePinnedTabs: ignorePinnedTabs
+      ignorePinnedTabs: ignorePinnedTabs,
+      ignoreAudioPlayback: ignoreAudioPlayback
     }, option => {
       resolve(option)
     })
   })
 }
 
-// function saveOption(){
-//   chrome.storage.local.set({
-//     isEnable: isEnable,
-//     timerValue: timerValue,
-//     ignorePinnedTabs: ignorePinnedTabs
-//   })
-// }
-
 function run(){
-  console.log('run')
+  removeTimerForSleep()
   getOption().then(option => {
     isEnable = option.isEnable
     timerValue = option.timerValue
     ignorePinnedTabs = option.ignorePinnedTabs
+    ignoreAudioPlayback = option.ignoreAudioPlayback
     if(isEnable) enable()
     else disable()
   })
@@ -36,7 +31,7 @@ function enable(){
   setEnableIcon()
   setSleepBadge()
   discardAllTab()
-  processForPinnedTab()
+  wakeUpIgnoreTabs()
   chrome.webNavigation.onCompleted.addListener(newTabListener)
 }
 
@@ -50,10 +45,6 @@ function disable(){
 
 function newTabListener(tabDetail){
   discardAllTab(tabDetail.tabId)
-}
-
-function isChromeSettingTab(tabDetail){
-  return tabDetail.url.includes('chrome://')
 }
 
 function startSleepModeTab(tabId){
@@ -123,32 +114,56 @@ function isPinnedTab(tab){
   return tab.pinned
 }
 
+function isAudioPlaybackTab(tab){
+  return tab.audible && !tab.muted
+}
+
 function discardAllTab(){
   chrome.tabs.query({url: "*://*/*", active: false}, tabs => {
       tabs.forEach(tab => {
-        if(ignorePinnedTabs && isPinnedTab(tab)) return
+        if(isIgnoreTab(tab)) return
         if(!isChromeSettingTab(tab) && !isTabHighlighted(tab))  startSleepModeTab(tab.id)
       })
   })
 }
 
-function processForPinnedTab(){
-  if(ignorePinnedTabs) {
-    chrome.tabs.query({url: "*://*/*", pinned: true, discarded: true}, tabs => {
-      tabs.forEach(tab => {
-        reload(tab)
-      })
-    })
-  }
+function isIgnoreTab(tab){
+  return isChromeSettingTab(tab)
+        || isFirefoxSettingTab(tab)
+        || (ignorePinnedTabs && isPinnedTab(tab))
+        || (ignoreAudioPlayback && isAudioPlaybackTab(tab))
 }
 
-// chrome.browserAction.onClicked.addListener(() => {
-//   if(isEnable) disable()
-//   else enable()
-// })
+function isChromeSettingTab(tabDetail){
+  return tabDetail.url.includes('chrome://')
+}
+
+function isFirefoxSettingTab(tabDetail){
+  return tabDetail.url.includes('about:')
+}
+
+function wakeUpIgnoreTabs(){
+  if(ignorePinnedTabs) wakeUpPinnedTabs()
+  if(ignoreAudioPlayback) wakeUpAudioTabs()
+}
+
+function wakeUpAudioTabs(){
+  chrome.tabs.query({url: "*://*/*", audible: true, discarded: true}, tabs => {
+    tabs.forEach(tab => {
+      reload(tab)
+    })
+  })
+}
+
+function wakeUpPinnedTabs(){
+  chrome.tabs.query({url: "*://*/*", pinned: true, discarded: true}, tabs => {
+    tabs.forEach(tab => {
+      reload(tab)
+    })
+  })
+}
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('message', message)
   if(message.msg === 'OPTION_START'){
     onOptionStart(message.time)
   }
@@ -172,23 +187,50 @@ function onOptionDisable(){
   run()
 }
 
+const timeUnitBase = 60 * 1000 // 1mins = 60*1000 miliseconds
 function getValidTimerValue(value){
-  return value
+  return value * timeUnitBase
 }
 
-let timerTimeout = null
+let timerInterval = null
+let timerCount = 0
+const interval = 30000 // every 30s
+removeTimerForSleep()
 function timerForSleep(){
   removeTimerForSleep()
-  timerTimeout = setTimeout(()=>{
-    removeTimerForSleep()
+  timerInterval = setInterval(()=>{
+    processTimerForSleepInterval()
+  }, interval)
+}
+
+function processTimerForSleepInterval(){
+  timerCount+= interval
+  if(timerCount==timerValue){
     run()
-  }, timerValue*1000*60)
+  } else {
+    let remainTime = "" + (timerValue - timerCount)/ timeUnitBase
+    remainTime = formatTimeToReadable(remainTime)
+    setCountdownBadge(remainTime)
+  }
+}
+
+function formatTimeToReadable(remainTime){
+  if(remainTime=="0.5"){
+    return '30s'
+  } else {
+    return `${remainTime}mins`
+  }
+}
+
+function setCountdownBadge(remainTime){
+  chrome.browserAction.setBadgeText({text: remainTime})
+  chrome.browserAction.setBadgeBackgroundColor({color: '#F00'})
 }
 
 function removeTimerForSleep(){
-  if(timerTimeout !== null) {
-    clearTimeout(timerTimeout)
-    timerTimeout = null
+  if(timerInterval !== null) {
+    clearInterval(timerInterval)
+    timerInterval = null
   }
 }
 run()
