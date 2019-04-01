@@ -194,10 +194,12 @@ function getValidTimerValue(value){
 
 let timerInterval = null
 let timerCount = 0
-const interval = 30000 // every 30s
+const interval = 60000 // every 1m
 removeTimerForSleep()
 function timerForSleep(){
   removeTimerForSleep()
+  let remainTime = timerValue / timeUnitBase
+  setCountdownBadge(remainTime)
   timerInterval = setInterval(()=>{
     processTimerForSleepInterval()
   }, interval)
@@ -205,26 +207,21 @@ function timerForSleep(){
 
 function processTimerForSleepInterval(){
   timerCount+= interval
+  let remainTime = (timerValue - timerCount)/ timeUnitBase
+  remainTime = formatTimeToReadable(remainTime)
+  setCountdownBadge(remainTime)
   if(timerCount==timerValue){
     run()
-  } else {
-    let remainTime = "" + (timerValue - timerCount)/ timeUnitBase
-    remainTime = formatTimeToReadable(remainTime)
-    setCountdownBadge(remainTime)
   }
 }
 
 function formatTimeToReadable(remainTime){
-  if(remainTime=="0.5"){
-    return '30s'
-  } else {
-    return `${remainTime}mins`
-  }
+  return remainTime
 }
 
 function setCountdownBadge(remainTime){
-  chrome.browserAction.setBadgeText({text: remainTime})
-  chrome.browserAction.setBadgeBackgroundColor({color: '#F00'})
+  chrome.browserAction.setBadgeText({text: ""+remainTime})
+  chrome.browserAction.setBadgeBackgroundColor({color: '#ffff99'})
 }
 
 function removeTimerForSleep(){

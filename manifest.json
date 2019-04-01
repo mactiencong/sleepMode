@@ -3,7 +3,7 @@
   "name": "Sleep Mode",
   "short_name": "Sleep Mode",
   "description": "Sleep Mode",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "author": "matico",
   "permissions": [
     "tabs",
