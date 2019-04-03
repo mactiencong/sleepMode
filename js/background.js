@@ -122,7 +122,7 @@ function discardAllTab(){
   chrome.tabs.query({url: "*://*/*", active: false}, tabs => {
       tabs.forEach(tab => {
         if(isIgnoreTab(tab)) return
-        if(!isChromeSettingTab(tab) && !isTabHighlighted(tab))  startSleepModeTab(tab.id)
+        startSleepModeTab(tab.id)
       })
   })
 }
@@ -132,6 +132,7 @@ function isIgnoreTab(tab){
         || isFirefoxSettingTab(tab)
         || (ignorePinnedTabs && isPinnedTab(tab))
         || (ignoreAudioPlayback && isAudioPlaybackTab(tab))
+        || isTabHighlighted(tab)
 }
 
 function isChromeSettingTab(tabDetail){
@@ -221,7 +222,7 @@ function formatTimeToReadable(remainTime){
 
 function setCountdownBadge(remainTime){
   chrome.browserAction.setBadgeText({text: ""+remainTime})
-  chrome.browserAction.setBadgeBackgroundColor({color: '#ffff99'})
+  chrome.browserAction.setBadgeBackgroundColor({color: 'black'})
 }
 
 function removeTimerForSleep(){

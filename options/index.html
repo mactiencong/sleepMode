@@ -1,7 +1,9 @@
 <html>
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
   <meta content="utf-8" http-equiv="encoding">
-  <link href="style.css" rel="stylesheet" media="screen">
+  <link href="css/style.css" rel="stylesheet" media="screen">
+  <link href="css/timer.css" rel="stylesheet" media="screen">
+  <link href="css/switch.css" rel="stylesheet" media="screen">
   <body>
     <div class="container">
         <div class="title"><strong>SLEEP MODE</strong></div>
@@ -25,13 +27,13 @@
                 </div>
             </div>
             <div class="item">
-                <div class="timer">
+                <div class="timer slidecontainer">
                     <p>Sleep timer</p>
-                    <input id="sleep_timer" type="range" min="0" max="120" value="0">
+                    <input id="sleep_timer" type="range" class="slider_timer">
                 </div>
             </div>
             <div class="item">
-                Sleep after&nbsp;<b id="timer_value"></b>&nbsp;mins
+                Sleep after&nbsp;<b id="timer_value" class="timer_value"></b>&nbsp;mins
             </div>
         </div>
         <div class="confirm">
@@ -40,5 +42,5 @@
         </div>
     </div>
   </body>
-  <script src="index.js"></script>
+  <script src="js/index.js"></script>
 </html>

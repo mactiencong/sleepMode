@@ -2,8 +2,8 @@
   "manifest_version": 2,
   "name": "Sleep Mode",
   "short_name": "Sleep Mode",
-  "description": "Sleep Mode",
-  "version": "2.1.1",
+  "description": "Sleep Mode will temporarily put all tabs to sleep mode for saving RAM memory, saving battery and make your computer/laptop faster.",
+  "version": "2.1.3",
   "author": "matico",
   "permissions": [
     "tabs",
