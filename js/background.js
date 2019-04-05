@@ -2,12 +2,15 @@ let isEnable = false
 let timerValue = 0
 let ignorePinnedTabs = false
 let ignoreAudioPlayback = false
+let ignoreOfficeTabs = false
+
 function getOption(){
   return new Promise(resolve => {
     chrome.storage.local.get({
       isEnable: isEnable,
       ignorePinnedTabs: ignorePinnedTabs,
-      ignoreAudioPlayback: ignoreAudioPlayback
+      ignoreAudioPlayback: ignoreAudioPlayback,
+      ignoreOfficeTabs: ignoreOfficeTabs
     }, option => {
       resolve(option)
     })
@@ -21,30 +24,37 @@ function run(){
     timerValue = option.timerValue
     ignorePinnedTabs = option.ignorePinnedTabs
     ignoreAudioPlayback = option.ignoreAudioPlayback
+    ignoreOfficeTabs = option.ignoreOfficeTabs
     if(isEnable) enable()
     else disable()
   })
 }
 
 function enable(){
+  chrome.webNavigation.onCompleted.addListener(discardAllTab)
+  if(chrome.tabs.onHighlightChanged){
+    chrome.tabs.onHighlightChanged.addListener(discardAllTab)
+  } else {
+    chrome.tabs.onHighlighted.addListener(discardAllTab)
+  }
   isEnable = true
   setEnableIcon()
   setSleepBadge()
   discardAllTab()
   wakeUpIgnoreTabs()
-  chrome.webNavigation.onCompleted.addListener(newTabListener)
 }
 
 function disable(){
   isEnable = false
+  chrome.webNavigation.onCompleted.removeListener(discardAllTab)
+  if(chrome.tabs.onHighlightChanged){
+    chrome.tabs.onHighlightChanged.removeListener(discardAllTab)
+  } else {
+    chrome.tabs.onHighlighted.removeListener(discardAllTab)
+  }
   setDisableIcon()
   removeSleepBadge()
   reloadAllTab()
-  chrome.webNavigation.onCompleted.removeListener(newTabListener)
-}
-
-function newTabListener(tabDetail){
-  discardAllTab(tabDetail.tabId)
 }
 
 function startSleepModeTab(tabId){
@@ -133,6 +143,7 @@ function isIgnoreTab(tab){
         || (ignorePinnedTabs && isPinnedTab(tab))
         || (ignoreAudioPlayback && isAudioPlaybackTab(tab))
         || isTabHighlighted(tab)
+        || (ignoreOfficeTabs && isOfficeTab(tab))
 }
 
 function isChromeSettingTab(tabDetail){
@@ -141,6 +152,18 @@ function isChromeSettingTab(tabDetail){
 
 function isFirefoxSettingTab(tabDetail){
   return tabDetail.url.includes('about:')
+}
+
+function isOfficeTab(tabDetail){
+  return isGoogleDocsTab(tabDetail) || isOneDriveTab(tabDetail)
+}
+
+function isGoogleDocsTab(tabDetail){
+  return tabDetail.url.includes('docs.google.com')
+}
+
+function isOneDriveTab(tabDetail){
+  return tabDetail.url.includes('onedrive.live.com')
 }
 
 function wakeUpIgnoreTabs(){
@@ -206,6 +229,13 @@ function timerForSleep(){
   }, interval)
 }
 
+function removeTimerForSleep(){
+  if(timerInterval !== null) {
+    clearInterval(timerInterval)
+    timerInterval = null
+  }
+}
+
 function processTimerForSleepInterval(){
   timerCount+= interval
   let remainTime = (timerValue - timerCount)/ timeUnitBase
@@ -225,10 +255,4 @@ function setCountdownBadge(remainTime){
   chrome.browserAction.setBadgeBackgroundColor({color: 'black'})
 }
 
-function removeTimerForSleep(){
-  if(timerInterval !== null) {
-    clearInterval(timerInterval)
-    timerInterval = null
-  }
-}
 run()
