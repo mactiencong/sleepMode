@@ -3,6 +3,7 @@ let timerValue = 0
 let ignorePinnedTabs = false
 let ignoreAudioPlayback = false
 let ignoreOfficeTabs = false
+// let ignoreTabs = []
 
 function getOption(){
   return new Promise(resolve => {
@@ -144,6 +145,11 @@ function isIgnoreTab(tab){
         || (ignoreAudioPlayback && isAudioPlaybackTab(tab))
         || isTabHighlighted(tab)
         || (ignoreOfficeTabs && isOfficeTab(tab))
+        || isManuallyIgnoredTab(tab)
+}
+
+function isManuallyIgnoredTab(tabDetail){
+  return ignoreTabs[tabDetail.id]? true: false
 }
 
 function isChromeSettingTab(tabDetail){
@@ -193,6 +199,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   else if(message.msg === 'OPTION_DISABLE'){
     onOptionDisable()
+  }
+  else if(message.msg === 'IGNORE_TABS'){
+    ignoreTabs = message.ignoreTabs
   }
 })
 

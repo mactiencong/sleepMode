@@ -3,20 +3,22 @@
   "name": "Sleep Mode",
   "short_name": "Sleep Mode",
   "description": "Sleep Mode will temporarily put all tabs to sleep mode for saving RAM memory, saving battery and make your computer/laptop faster.",
-  "version": "2.1.6",
+  "version": "2.2.0",
   "author": "matico",
   "permissions": [
     "tabs",
     "activeTab",
     "webNavigation",
     "storage",
-    "<all_urls>"
+    "<all_urls>",
+    "contextMenus"
   ],
   "icons":{
     "128": "icon/enable.png"
   },
   "background": {
     "scripts": [
+        "menus/index.js",
         "js/background.js"
     ],
     "persistent": true
