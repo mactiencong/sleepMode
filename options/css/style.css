@@ -1,5 +1,4 @@
 body {
-    /* width: 250px; */
     margin: 20px;
 }
 .container{
@@ -56,6 +55,7 @@ body {
 
 .timer {
     flex: 1;
+    margin-bottom: 10px;
 }
 
 #sleep_timer {
@@ -76,6 +76,7 @@ body {
     font-size: 16px;
     margin: 4px 2px;
     cursor: pointer;
+    border-radius: 5%;
 }
 
 .start_button {

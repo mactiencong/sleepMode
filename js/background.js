@@ -3,7 +3,6 @@ let timerValue = 0
 let ignorePinnedTabs = false
 let ignoreAudioPlayback = false
 let ignoreOfficeTabs = false
-// let ignoreTabs = []
 
 function getOption(){
   return new Promise(resolve => {
@@ -33,11 +32,7 @@ function run(){
 
 function enable(){
   chrome.webNavigation.onCompleted.addListener(discardAllTab)
-  if(chrome.tabs.onHighlightChanged){
-    chrome.tabs.onHighlightChanged.addListener(discardAllTab)
-  } else {
-    chrome.tabs.onHighlighted.addListener(discardAllTab)
-  }
+  chrome.tabs.onHighlighted.addListener(discardAllTab)
   isEnable = true
   setEnableIcon()
   setSleepBadge()
@@ -48,11 +43,7 @@ function enable(){
 function disable(){
   isEnable = false
   chrome.webNavigation.onCompleted.removeListener(discardAllTab)
-  if(chrome.tabs.onHighlightChanged){
-    chrome.tabs.onHighlightChanged.removeListener(discardAllTab)
-  } else {
-    chrome.tabs.onHighlighted.removeListener(discardAllTab)
-  }
+  chrome.tabs.onHighlighted.removeListener(discardAllTab)
   setDisableIcon()
   removeSleepBadge()
   reloadAllTab()
@@ -89,10 +80,7 @@ function reload(tab){
 }
 
 function discardTab(tabId){
-  try {
-    chrome.tabs.discard(tabId)
-  } catch(error){
-  }
+  chrome.tabs.discard(tabId)
 }
 
 function changeTabTitle(tabId){
@@ -130,7 +118,7 @@ function isAudioPlaybackTab(tab){
 }
 
 function discardAllTab(){
-  chrome.tabs.query({url: "*://*/*", active: false}, tabs => {
+  chrome.tabs.query({url: "*://*/*", active: false, discarded: false}, tabs => {
       tabs.forEach(tab => {
         if(isIgnoreTab(tab)) return
         startSleepModeTab(tab.id)

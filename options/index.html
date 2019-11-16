@@ -13,7 +13,7 @@
                 <div class="value">
                     <label class="switch">
                         <input id="ignore_pinned_tabs" type="checkbox">
-                        <span class="slider round"></span>
+                        <span class="slider"></span>
                     </label>
                 </div>
             </div>
@@ -22,7 +22,7 @@
                 <div class="value">
                     <label class="switch">
                         <input id='ignore_audio_playback' type="checkbox">
-                        <span class="slider round"></span>
+                        <span class="slider"></span>
                     </label>
                 </div>
             </div>
@@ -31,18 +31,18 @@
                 <div class="value">
                     <label class="switch">
                         <input id='ignore_office_tabs' type="checkbox">
-                        <span class="slider round"></span>
+                        <span class="slider"></span>
                     </label>
                 </div>
             </div>
             <div class="item">
                 <div class="timer slidecontainer">
-                    <p>Sleep timer</p>
-                    <input id="sleep_timer" type="range" class="slider_timer">
+                    <p><strong>TIMER (immediately to 60 mins)</strong></p>
+                    <input id="sleep_timer" type="range" class="slider_timer" min="0" max="60" step="1">
                 </div>
             </div>
             <div class="item">
-                Sleep after&nbsp;<b id="timer_value" class="timer_value"></b>&nbsp;mins
+                Sleep&nbsp;<b id="timer_value_after"></b>&nbsp;<b id="timer_value" class="timer_value"></b>&nbsp;<b id="timer_value_mins"></b>
             </div>
         </div>
         <div class="confirm">
