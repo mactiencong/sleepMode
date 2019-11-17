@@ -50,8 +50,8 @@ function disable(){
 }
 
 function startSleepModeTab(tabId){
-  changeTabTitle(tabId).then(()=>{
-    discardTab(tabId)
+  changeTabTitle(tabId).then((isOK)=>{
+    if(isOK) discardTab(tabId)
   })
 }
 
@@ -85,13 +85,9 @@ function discardTab(tabId){
 
 function changeTabTitle(tabId){
   return new Promise(resolve => {
-    try {
-      chrome.tabs.executeScript(tabId, {code:"if(!document.title.includes('☾ ')) document.title = '☾ '+document.title"}, () => {
-        resolve(true)
-      })
-    } catch(error){
+    chrome.tabs.executeScript(tabId, {code:"if(!document.title.includes('☾ ')) document.title = '☾ '+document.title"}, () => {
       resolve(true)
-    }
+    })
   })
 }
 

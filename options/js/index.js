@@ -40,7 +40,7 @@ function save_options(on_save) {
 function close_popup(){
   setTimeout(()=>{
     window.close()
-  }, 0)
+  }, 3000)
 }
 
 function options_start_msg(){
